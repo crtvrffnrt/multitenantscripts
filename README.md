@@ -1,6 +1,6 @@
 # Multi-Tenant Scripts
 
-This repository contains a collection of bash scripts designed to assist with multi-tenant Azure AD management. These scripts facilitate bulk guest invitations and the management of application permissions across multiple tenants.
+This repository contains a collection of bash scripts designed to assist with multi-tenant EntraId management. These scripts facilitate bulk guest invitations and the management of application permissions across multiple tenants. And more to come :)
 
 ## Scripts Overview
 
