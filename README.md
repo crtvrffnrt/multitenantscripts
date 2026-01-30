@@ -6,7 +6,7 @@ This repository contains a collection of bash scripts designed to assist with mu
 
 ### 1. BulkGuestInvite.sh
 **Description:**
-Enables bulk guest invitation using Microsoft Graph via `az rest`. This is particularly useful for tenants without Entra ID P2 licensing where Access Packages cannot be used.
+Enables bulk guest invitation using Microsoft Graph via `az rest`.
 
 **Prerequisites:**
 - Azure CLI (`az`) installed and logged in.
