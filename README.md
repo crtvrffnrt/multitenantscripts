@@ -70,6 +70,58 @@ Edit the script to set:
 ./multipermissiondelete.sh
 ```
 
+---
+
+### 4. BulkGuestDelete.sh
+**Description:**
+Deletes multiple guest accounts across multiple tenants by matching the beginning of the guest UPN.
+
+**How matching works:**
+- `guests.txt` contains *guest keys* (one per line), e.g. `m.muster`
+- The script searches for users where:
+  - `userType == "Guest"`
+  - `userPrincipalName` starts with the guest key
+- Example match:
+  - guest key: `m.muster`
+  - guest UPN in tenant: `m.muster_hometenant.com#EXT#@contoso.onmicrosoft.com`
+
+**Prerequisites:**
+- Azure CLI (`az`) installed and logged in with permissions to read/delete users in the target tenants.
+- `jq` installed.
+- `curl` installed.
+- A file named `tenants.txt` containing one Tenant ID per line.
+- A file named `guests.txt` containing one guest key per line.
+
+**Usage:**
+1.  Prepare `tenants.txt`:
+    ```text
+    11111111-1111-1111-1111-111111111111
+    22222222-2222-2222-2222-222222222222
+    ```
+2.  Prepare `guests.txt`:
+    ```text
+    m.muster
+    another.guest_prefix
+    ```
+3.  Run a dry-run first:
+    ```bash
+    ./BulkGuestDelete.sh --dry-run
+    ```
+4.  Execute deletions:
+    ```bash
+    ./BulkGuestDelete.sh
+    ```
+
+**Options:**
+- `--tenant-file FILE` (default `tenants.txt`)
+- `--guest-file FILE` (default `guests.txt`)
+- `--dry-run` (no deletes, prints what would be deleted)
+- `--help`
+
+**Output:**
+Prints one line per tenant + guest key match, including deletion result:
+`tenantId | guestKey | matchedGuestUpn | userId | action | httpStatus`
+
 ## Setup
 
 1.  Clone this repository.
