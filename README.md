@@ -122,6 +122,89 @@ Deletes multiple guest accounts across multiple tenants by matching the beginnin
 Prints one line per tenant + guest key match, including deletion result:
 `tenantId | guestKey | matchedGuestUpn | userId | action | httpStatus`
 
+---
+
+### 5. multitenant_ca_policy_guard.sh
+**Description:**
+Checks (or remediates) Conditional Access policy configuration across multiple tenants by comparing a matched policy to a reference JSON policy.
+
+**Prerequisites:**
+- Azure CLI (`az`) installed and logged in.
+- `jq`, `curl`, and `base64` installed.
+- A file with target tenant IDs (one per line), for example `tenants.txt`.
+- A reference Conditional Access policy JSON file containing at least:
+  - `state`
+  - `conditions`
+  - `grantControls`
+
+**Usage:**
+```bash
+./multitenant_ca_policy_guard.sh \
+  --target tenants.txt \
+  --reference-policy first_conditional_access_policy.json \
+  --mode check|change
+```
+
+**Options:**
+- `--target FILE` (required): tenant list file
+- `--reference-policy FILE` (required): reference policy JSON
+- `--mode check|change` (required)
+- `--match-string-1 STRING` (optional): policy display name contains this value
+- `--match-string-2 STRING` (optional): policy display name contains this value
+- `--setting-check LIST` (optional, check mode only): compact per-setting checks
+- `--tablemode` (optional): print table output instead of JSON
+- `--help`
+
+**Policy matching behavior:**
+- If `--match-string-1` / `--match-string-2` are omitted, the script matches by exact reference policy display name (case-insensitive).
+- If multiple policies match in a tenant, no remediation is applied for safety.
+
+**Examples:**
+1. Full JSON check output:
+```bash
+./multitenant_ca_policy_guard.sh \
+  --target ../tenants.txt \
+  --reference-policy ../CA00.json \
+  --mode check | jq
+```
+
+2. Compact per-setting JSON output:
+```bash
+./multitenant_ca_policy_guard.sh \
+  --target ../tenants.txt \
+  --reference-policy ../CA00.json \
+  --mode check \
+  --setting-check state,target-apps,assigned-users | jq
+```
+
+3. CLI table output overview:
+```bash
+./multitenant_ca_policy_guard.sh \
+  --target ../tenants.txt \
+  --reference-policy ../CA00.json \
+  --mode check \
+  --setting-check state,target-apps,assigned-users \
+  --tablemode
+```
+
+**Supported `--setting-check` selectors:**
+- `state`
+- `assigned-users`
+- `target-apps`
+- `conditions`
+- `grant-controls`
+- `session-controls`
+- Custom jq path selector: `path:.conditions.platforms.includePlatforms`
+
+**Output modes:**
+- Default: structured JSON report with `results`.
+- `--setting-check`: compact JSON rows with:
+  - `tenantId`
+  - `caFound`
+  - `setting`
+  - `matchesReference`
+- `--tablemode`: prints a readable table in CLI stdout.
+
 ## Setup
 
 1.  Clone this repository.
