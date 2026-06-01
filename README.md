@@ -205,6 +205,66 @@ Checks (or remediates) Conditional Access policy configuration across multiple t
   - `matchesReference`
 - `--tablemode`: prints a readable table in CLI stdout.
 
+---
+
+### 6. multitenant_device_code_flow_ca_check.sh
+**Description:**
+Checks multiple Microsoft Entra ID tenants for Conditional Access policies that target OAuth Device Code Flow and reports whether those policies are likely effective.
+
+**Purpose:**
+- Detects Conditional Access policies by policy structure, not by display name or policy ID.
+- Focuses on policies with `.conditions.authenticationFlows.transferMethods` matching `deviceCodeFlow`.
+- Classifies each tenant as protected, report-only, disabled, missing, or error.
+- Read-only only: the script never modifies policies.
+
+**Prerequisites:**
+- Azure CLI (`az`) installed and already logged in.
+- `curl`, `jq`, and `base64` installed.
+- Optional: `column` for prettier table output.
+- A file named `tenants.txt` containing one tenant ID per line.
+
+**Example `tenants.txt`:**
+```text
+# One tenant ID per line
+11111111-1111-1111-1111-111111111111
+22222222-2222-2222-2222-222222222222
+```
+
+**Usage:**
+```bash
+./multitenant_device_code_flow_ca_check.sh
+./multitenant_device_code_flow_ca_check.sh --tenant-file tenants.txt
+./multitenant_device_code_flow_ca_check.sh --json
+./multitenant_device_code_flow_ca_check.sh --table
+./multitenant_device_code_flow_ca_check.sh --debug
+./multitenant_device_code_flow_ca_check.sh --help
+```
+
+**Output explanation:**
+- Table mode prints a summary table with:
+  - `TENANT_ID`
+  - `TENANT_NAME`
+  - `STATUS`
+  - `MATCHING_POLICIES`
+  - `EFFECTIVE_BLOCK`
+  - `POLICY_NAMES`
+  - `ERROR`
+- JSON mode prints a single JSON object with `generatedAt`, `summary`, and `results`.
+
+**Status classification:**
+- `PROTECTED_ENABLED_BLOCK` - at least one matching policy is enabled, has Device Code Flow in scope, and includes `block` in grant controls.
+- `PRESENT_ENABLED_NON_BLOCK` - a matching policy is enabled, but grant controls do not clearly block access.
+- `REPORT_ONLY` - a matching policy exists but is only `enabledForReportingButNotEnforced`.
+- `DISABLED` - a matching policy exists but is disabled.
+- `MISSING` - no matching Conditional Access policy was found.
+- `ERROR_NO_TOKEN` - no Microsoft Graph token could be acquired for the tenant.
+- `ERROR_CONTEXT_MISMATCH` - the acquired token did not match the requested tenant.
+- `ERROR_LIST_POLICIES` - Microsoft Graph policy listing failed.
+
+**Notes:**
+- The script is check-only and does not remediate, create, delete, or modify any policy.
+- It uses the existing Azure CLI session and does not call `az login`.
+
 ## Setup
 
 1.  Clone this repository.
